@@ -1,21 +1,33 @@
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from app.models.employee import Employee
+from app.schemas.employee import EmployeeCreate
 
 
 class EmployeeService:
 
-    def __init__(self):
-        self.employees: list[Employee] = []
+    @staticmethod
+    def create_employee(db: Session, employee_data: EmployeeCreate) -> Employee:
+        employee = Employee(
+            employee_id=employee_data.employee_id,
+            name=employee_data.name,
+            email=employee_data.email,
+            department=employee_data.department,
+            role=employee_data.role
+        )
 
-    def create_employee(self, employee: Employee) -> Employee:
-        self.employees.append(employee)
+        db.add(employee)
+        db.commit()
+        db.refresh(employee)
+
         return employee
 
-    def get_all_employees(self) -> list[Employee]:
-        return self.employees
+    @staticmethod
+    def get_all_employees(db: Session) -> list[Employee]:
+        result = db.execute(select(Employee))
+        return list(result.scalars().all())
 
-    def get_employee_by_id(self, employee_id: int) -> Employee | None:
-        for employee in self.employees:
-            if employee.id == employee_id:
-                return employee
-
-        return None
+    @staticmethod
+    def get_employee_by_id(db: Session, employee_id: int) -> Employee | None:
+        return db.get(Employee, employee_id)

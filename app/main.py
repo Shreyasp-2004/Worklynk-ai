@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 
 from app.api.employee import router as employee_router
+from app.core.base import Base
+from app.core.database import engine
+from app.models import employee  # noqa: F401
 
 
 app = FastAPI(
@@ -9,6 +12,8 @@ app = FastAPI(
     version="0.1.0"
 )
 
+
+Base.metadata.create_all(bind=engine)
 
 app.include_router(employee_router)
 
